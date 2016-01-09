@@ -1,3 +1,7 @@
+// movie_add - Lesson 1 challenge
+// Ron Patterson, BPWC
+// 1/7/2016
+
 var express = require('express'),
     app = express(),
     MongoClient = require('mongodb').MongoClient,
@@ -26,6 +30,15 @@ MongoClient.connect('mongodb://localhost:27017/video', function(err, db) {
 		res.render('movieForm');
 	});
 
+    app.get('/movies', function(req, res) {
+        db.collection('movies')
+        .find({})
+        .sort({'title':1})
+        .toArray(function(err, docs) {
+            res.render('movies', { 'movies': docs } );
+        });
+    });
+
 	app.post('/movie_add', function(req, res, next) {
 		var title = req.body.title,
 			year = req.body.year,
@@ -34,8 +47,10 @@ MongoClient.connect('mongodb://localhost:27017/video', function(err, db) {
 			next('Please fill in all fields!');
 		}
 		else {
+			// setup the movie document
 			var doc = { 'title': title, 'year': year, 'imdb': imdb };
-			var rec = db.collection('movies').insert(doc, function(err, result) {
+			var rec = db.collection('movies')
+			.insert(doc, function(err, result) {
 			    assert.equal(err, null);
 				res.send("Inserted title: " + title + ", year: " + year + ", imdb: " + imdb);
 			    console.log("Inserted a document into the movies collection.");
