@@ -1,0 +1,6 @@
+*~
+*pdf
+*project
+.*
+!.gitignore
+node_modules
