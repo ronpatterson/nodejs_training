@@ -1,6 +1,7 @@
 *~
 *pdf
 *project
+*bbprojectd
 .*
 !.gitignore
 node_modules
