@@ -4,9 +4,9 @@ body { font-family: 'Helvetica', 'Arial', sans-serif; }
 </style>
 </head>
 
-<h1>Movies</h1>
-{% for movie in movies %}
-  <li><a href="http://www.imdb.com/title/{{ movie.imdb }}">{{ movie.title }}, {{ movie.year }}</a></li>
+<h1>BugTrack Bugs</h1>
+{% for bug in bugs %}
+  <li><a href="/bugDetail/{{ bug._id }}">{{ bug.bug_id }}, {{ bug.descr }}</a></li>
 {% else %}
-  <li>No movies found.</li>
+  <li>No bugs found.</li>
 {% endfor %}
