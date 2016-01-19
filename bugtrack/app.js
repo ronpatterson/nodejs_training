@@ -33,9 +33,11 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     app.get('/bugList', function(req, res) {
         db.collection('bt_bugs')
         .find({})
-        //.sort({'title':1})
+        .sort({'bug_id':1})
         .toArray(function(err, bugs) {
-            res.render('bugList', { 'bugs': bugs } );
+            app.render('bugList', { 'bugs': bugs }, function(err, html) {
+            	document.getElementById('bug_list').innerHTML(html);
+            });
         });
     });
 
