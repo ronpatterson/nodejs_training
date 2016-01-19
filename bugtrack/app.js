@@ -27,15 +27,17 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     console.log("Successfully connected to MongoDB.");
 
 	app.get('/', function(req, res, next) {
-		res.render('bugForm');
+		res.render('bugtrack');
 	});
 
     app.get('/bugList', function(req, res) {
         db.collection('bt_bugs')
         .find({})
-        //.sort({'title':1})
+        .sort({'bug_id':1})
         .toArray(function(err, bugs) {
-            res.render('bugList', { 'bugs': bugs } );
+            app.render('bugList', { 'bugs': bugs }, function(err, html) {
+            	document.getElementById('bug_list').innerHTML(html);
+            });
         });
     });
 
