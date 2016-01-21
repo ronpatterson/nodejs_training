@@ -28,11 +28,11 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     console.log("Successfully connected to MongoDB.");
 
 	app.get('/', function(req, res, next) {
-		res.render(res,'bugtrack');
+		res.render('bugtrack');
 	});
 
     app.get('/js', function(req, res) {
-    	return_file('./views/bugtrack.js');
+    	return_file(res,'./views/bugtrack.js');
     });
 
     app.get('/bugList', function(req, res) {
