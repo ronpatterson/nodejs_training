@@ -1,36 +1,36 @@
 <!doctype HTML>
 <html>
-  <head>
-  <title>BugTrack</title>
-	<meta name="author" content="Ron Patterson, ASD20">
-	<link type="text/css" rel="stylesheet" href="//192.168.0.25/bugtrack/bugtrack.css" title="bt styles">
-	<link rel="stylesheet" href="//cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-	<script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-	<script type="text/javascript" charset="utf-8" src="//cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
-	<script type="text/javascript" src="//192.168.0.25/bugtrack/bugtrack2.js"></script>
-	<style type="text/css">
-		button:hover { font-weight: bold; }
-	</style>
-  </head>
-<body background="" bgcolor="#e0e0e0">
-<center>
-<table>
-	<tr><td><img src="//192.168.0.25/bugtrack/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="//192.168.0.25/bugtrack/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
-	<td valign="middle"><font size="+1"><b>BugTrack</b></font></td></tr>
-</table><br>
-<input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
-<input type="hidden" name="userid" value="<?php echo $uid ?>" id="userid" />
-<input type="hidden" name="bid" id="bid" value="">
-<input type="hidden" name="bug_id" id="bug_id" value="">
-<div id="bt_button_div">
-	<span id="bt_refresh_btn">Refresh List</span>
-	<span id="bt_add_btn">Add New</span>
-	<span id="bt_admin_btn">Admin</span>
-	<span id="bt_help_btn">Help</span>
-</div>
-</center>
-  </body>
+	<head>
+		<title>BugTrack</title>
+		<meta name="author" content="Ron Patterson, ASD20">
+		<link type="text/css" rel="stylesheet" href="//192.168.0.25/bugtrack/bugtrack.css" title="bt styles">
+		<link rel="stylesheet" href="//cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+		<script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<script type="text/javascript" charset="utf-8" src="//cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="js"></script>
+		<style type="text/css">
+			button:hover { font-weight: bold; }
+		</style>
+	</head>
+	<body background="" bgcolor="#e0e0e0">
+		<center>
+		<table>
+		<tr><td><img src="//192.168.0.25/bugtrack/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="//192.168.0.25/bugtrack/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
+		<td valign="middle"><font size="+1"><b>BugTrack</b></font></td></tr>
+		</table><br>
+		<input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
+		<input type="hidden" name="userid" value="<?php echo $uid ?>" id="userid" />
+		<input type="hidden" name="bid" id="bid" value="">
+		<input type="hidden" name="bug_id" id="bug_id" value="">
+		<div id="bt_button_div">
+			<span id="bt_refresh_btn">Refresh List</span>
+			<span id="bt_add_btn">Add New</span>
+			<span id="bt_admin_btn">Admin</span>
+			<span id="bt_help_btn">Help</span>
+		</div>
+		</center>
+	</body>
 </html>

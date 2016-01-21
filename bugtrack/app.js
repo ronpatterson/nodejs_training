@@ -7,6 +7,7 @@ var express = require('express'),
     MongoClient = require('mongodb').MongoClient,
     engines = require('consolidate'),
     bodyParser = require('body-parser'),
+    fs = require('fs'),
     assert = require('assert');
 
 app.engine('html', engines.nunjucks);
@@ -27,8 +28,12 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     console.log("Successfully connected to MongoDB.");
 
 	app.get('/', function(req, res, next) {
-		res.render('bugtrack');
+		res.render(res,'bugtrack');
 	});
+
+    app.get('/js', function(req, res) {
+    	return_file('./views/bugtrack.js');
+    });
 
     app.get('/bugList', function(req, res) {
         db.collection('bt_bugs')
@@ -69,3 +74,8 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 	});
 
 });
+
+function return_file ( res, file ) {
+	var doc = fs.readFileSync(file);
+	res.send(doc);
+}
