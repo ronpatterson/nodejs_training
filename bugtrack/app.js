@@ -33,6 +33,7 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 
     app.get('/js', function(req, res) {
     	return_file(res,'./views/bugtrack.js');
+    	res.end();
     });
 
     app.get('/bugList', function(req, res) {
