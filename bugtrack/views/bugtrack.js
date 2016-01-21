@@ -1,4 +1,4 @@
-// bugtrack.js
+// bugtrack.js (node.js version)
 //
 // Ron Patterson, WildDog Design
 
@@ -31,7 +31,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=bt_check_session";
 		$.ajax({
-			url: bt.URL,
+			url: 'bt_check_session',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -81,7 +81,7 @@ var bt = // setup the bt namespace
 		var params = "action=bt_login_handler";
 		params += '&'+$('#bt_login_form').serialize();
 		$.ajax({
-			url: bt.URL,
+			url: 'bt_login_handler',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -119,7 +119,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=bt_logout_handler";
 		$.ajax({
-			url: bt.URL,
+			url: 'bt_logout_handler',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -216,7 +216,7 @@ var bt = // setup the bt namespace
 		//alert('edit_bug '+id2);
 		var params = "action=edit&id="+id2;
 		$.ajax({
-			url: bt.URL,
+			url: 'bug_edit',
 			type: 'post',
 			data: params,
 			dataType: 'json'
@@ -267,7 +267,7 @@ var bt = // setup the bt namespace
 		//var id2 = parseInt(id.replace(/[^\d]/g,''));
 		var params = "action=show&id="+id;
 		$.ajax({
-			url: bt.URL,
+			url: 'bug_show',
 			type: 'post',
 			data: params,
 			dataType: 'json'
@@ -350,7 +350,7 @@ var bt = // setup the bt namespace
 		params += '&user_id='+$('#userid').val();
 		//alert('bughandler '+params);
 		$.ajax({
-			url: bt.URL,
+			url: 'bug_add_update',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -378,7 +378,7 @@ var bt = // setup the bt namespace
 		var params = 'action=delete';
 		params += '&id='+$('#bid').val();
 		$.ajax({
-			url: bt.URL,
+			url: 'bug_delete',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -447,7 +447,7 @@ var bt = // setup the bt namespace
 		params += '&id='+id;
 		params += '&uid='+user;
 		$.ajax({
-			url: bt.URL,
+			url: 'assign_user',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -491,7 +491,7 @@ var bt = // setup the bt namespace
 		params += '&bug_id='+$('#bug_id').val();
 		//alert('workloghandler '+params);
 		$.ajax({
-			url: bt.URL,
+			url: 'worklog_add',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -523,7 +523,7 @@ var bt = // setup the bt namespace
 		params += '&id='+$('#bid').val();
 		params += '&bug_id='+$('#bug_id').val();
 		$.ajax({
-			url: bt.URL,
+			url: 'get_files',
 			type: 'post',
 			data: params,
 			dataType: 'json'
@@ -561,7 +561,7 @@ var bt = // setup the bt namespace
 		var params = 'action=remove_file';
 		params += '&fid='+$('#fid').val();
 		$.ajax({
-			url: bt.URL,
+			url: 'remove_file',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -597,7 +597,7 @@ var bt = // setup the bt namespace
 		params += '&bug_id='+$('#bug_id').val();
 		params += '&'+$('#bug_email_form').serialize();
 		$.ajax({
-			url: bt.URL,
+			url: 'email_bug',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -696,7 +696,7 @@ var bt = // setup the bt namespace
 		var params = "action=bt_user_show";
 		params += '&uid='+uid2;
 		$.ajax({
-			url: bt.URL,
+			url: 'bt_user_show',
 			type: 'post',
 			data: params,
 			dataType: 'json'
@@ -759,7 +759,7 @@ var bt = // setup the bt namespace
 		params += '&'+$('#bt_user_form_id').serialize();
 		//alert('userhandler '+params); return false;
 		$.ajax({
-			url: bt.URL,
+			url: 'user_add_update',
 			type: 'post',
 			data: params,
 			dataType: 'html'
@@ -903,7 +903,7 @@ var bt = // setup the bt namespace
 		$('#bt_admin_btn').show();
 		var params = 'action=bt_init';
 		$.ajax({
-			url: bt.URL,
+			url: 'bt_init',
 			type: 'post',
 			data: params,
 			dataType: 'json'
