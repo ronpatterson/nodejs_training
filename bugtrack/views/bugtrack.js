@@ -160,8 +160,8 @@ var bt = // setup the bt namespace
 		$('#bt_tbl tbody').off( 'click', 'button');
 		var table = $('#bt_tbl').DataTable({
 			'ajax': {
-				'url': bt.URL,
-				'type': 'post',
+				'url': 'bug_list',
+				'type': 'get',
 				'data': params
 			},
 			'destroy': true,
@@ -216,8 +216,8 @@ var bt = // setup the bt namespace
 		//alert('edit_bug '+id2);
 		var params = "action=edit&id="+id2;
 		$.ajax({
-			url: 'bug_edit',
-			type: 'post',
+			url: 'bug_get',
+			type: 'get',
 			data: params,
 			dataType: 'json'
 		}).done(function (data)
@@ -267,8 +267,8 @@ var bt = // setup the bt namespace
 		//var id2 = parseInt(id.replace(/[^\d]/g,''));
 		var params = "action=show&id="+id;
 		$.ajax({
-			url: 'bug_show',
-			type: 'post',
+			url: 'bug_get',
+			type: 'get',
 			data: params,
 			dataType: 'json'
 		}).done(function (data)
@@ -637,34 +637,37 @@ var bt = // setup the bt namespace
 	bugadmin_users: function ( event )
 	{
 		$('#bt_user_tbl tbody').off( 'click', 'button');
-		var table = $('#bt_user_tbl').DataTable({
-			'ajax': {
-				'url': bt.URL,
-				'type': 'post',
-				'data': { 'action': 'admin_users' }
-			},
-			'destroy': true,
-			'order': [[ 0, "asc" ]],
-			'columns': [
-				{'data': 'uid'},
-				{'data': 'name'},
-				{'data': 'email'},
-				{'data': 'roles'},
-				{'data': 'active'},
-				null
-			],
-			'columnDefs': [ {
-				'targets': -1,
-				'data': null,
-				'defaultContent': '<button>Edit</button>'
-			} ]
+		$.ajax({
+			url: 'admin_users',
+			type: 'get',
+			dataType: 'json'
+		}).done(function (data)
+		{
+            var table = $('#bt_user_tbl').DataTable({
+                'data': data,
+                'destroy': true,
+                'order': [[ 0, "asc" ]],
+                'columns': [
+                    {'data': 'uid'},
+                    {'data': 'name'},
+                    {'data': 'email'},
+                    {'data': 'roles'},
+                    {'data': 'active'},
+                    null
+                ],
+                'columnDefs': [ {
+                    'targets': -1,
+                    'data': null,
+                    'defaultContent': '<button>Edit</button>'
+                } ]
+            });
+            $('#bt_user_tbl tbody').on( 'click', 'button', function () {
+                var data = table.row( $(this).parents('tr') ).data();
+                //alert( 'user='+data[0]);
+                //console.log(data);
+                bt.user_show(event,data.uid);
+            } );
 		});
-		$('#bt_user_tbl tbody').on( 'click', 'button', function () {
-			var data = table.row( $(this).parents('tr') ).data();
-			//alert( 'user='+data[0]);
-			//console.log(data);
-			bt.user_show(event,data.uid);
-		} );
 		$('#bt_users_list').show();
 		$('#bt_users_form').hide();
 		return false;
@@ -696,18 +699,18 @@ var bt = // setup the bt namespace
 		var params = "action=bt_user_show";
 		params += '&uid='+uid2;
 		$.ajax({
-			url: 'bt_user_show',
-			type: 'post',
+			url: 'user_get',
+			type: 'get',
 			data: params,
 			dataType: 'json'
 		}).done(function (data)
 		{
 			//console.log(data);
 			//bt.showDialogDiv('User Edit','bt_users_form');
-			$('#bt_user_form_id').on('submit',bt.userhandler);
+			//$('#bt_user_form_id').on('submit',bt.userhandler);
 			$('#bt_admin_errors').html('');
 			$('input[name="uid"]').val(uid);
-			$('input[name="id"]').val(data.id);
+			$('input[name="id"]').val(data._id);
 			$('input[name="uid1"]').val(uid);
 			$('input[name="uid1"]').attr('readonly',true);
 			$('input[name="lname"]').val(data.lname);
@@ -904,7 +907,7 @@ var bt = // setup the bt namespace
 		var params = 'action=bt_init';
 		$.ajax({
 			url: 'bt_init',
-			type: 'post',
+			type: 'get',
 			data: params,
 			dataType: 'json'
 		}).done(function (data)
