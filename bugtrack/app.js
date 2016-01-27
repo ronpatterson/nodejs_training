@@ -11,9 +11,13 @@ var express = require('express'),
     fs = require('fs'),
     dateFormat = require('dateformat'),
     crypto = require('crypto'),
+    mailer = require("nodemailer"),
+    multer = require('multer'),
+	upload = multer(), // for parsing multipart/form-data
     assert = require('assert');
 
-var lookups = [];
+var lookups = [],
+	adir = '/usr/local/data/';
 
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
@@ -34,10 +38,43 @@ function getBTlookup ( type, cd ) {
 	}
 }
 
+function app_init ( db ) {
+	var cursor = db.collection('bt_lookups').find({});
+	cursor.project({'_id':0});
+	var results = {};
+	cursor.forEach(function(doc) {
+		//assert.equal(null, doc);
+		["bt_type","bt_group","bt_status","bt_priority"].forEach(function(element, index, array) {
+			var arr = [];
+			doc[element].forEach(function(element2, index2, array2) {
+				if (element2.active == "y")
+					arr.push({"cd":element2.cd,"descr":element2.descr});
+			});
+			results[element] = arr;
+		})
+	}, function(err) {
+		assert.equal(null, err);
+		results.roles = "admin";
+		results.users = [];
+		// get users for lookups
+		var cursor = db.collection('bt_users').find({});
+		cursor.forEach(function(doc) {
+			//console.log(doc);
+			doc.name = doc.lname + ', ' + doc.fname;
+			results.users[doc.uid] = doc;
+		}, function(err) {
+			assert.equal(null, err);
+		});
+		//console.log(results);
+		lookups = results;
+	});
+}
+
 MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 
     assert.equal(null, err);
     console.log("Successfully connected to MongoDB.");
+    app_init(db);
 
 	app.get('/', function(req, res, next) {
 		res.render('bugtrack');
@@ -56,35 +93,19 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     	res.end();
     });
 
-    app.get('/img/:name', function(req, res) {
+    app.get('/views/:name', function(req, res) {
 		var doc = fs.readFileSync('./views/'+req.params.name);
 		res.send(doc);
     	res.end();
     });
     
+	app.get('/add_file', function(req, res, next) {
+		res.render('add_file');
+	});
+
     app.get('/bt_init', function(req, res) {
-        var cursor = db.collection('bt_lookups').find({});
-        cursor.project({'_id':0});
-        var results = {};
-		cursor.forEach(function(doc) {
-		    //assert.equal(null, doc);
-			["bt_type","bt_group","bt_status","bt_priority"].forEach(function(element, index, array) {
-				var arr = [];
-				doc[element].forEach(function(element2, index2, array2) {
-					if (element2.active == "y")
-						arr.push({"cd":element2.cd,"descr":element2.descr});
-				});
-				results[element] = arr;
-			})
-		}, function(err) {
-		    assert.equal(null, err);
-			results.roles = "admin";
-			//console.log(results);
-			lookups = results;
-			//console.log(lookups);
-			res.json(results);
-			res.end();
-		});
+		res.json(lookups);
+		res.end();
     });
 
     app.get('/bugList', function(req, res) {
@@ -127,9 +148,20 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
         db.collection('bt_bugs')
         .findOne({'_id':new ObjectId(id)},function(err, bug) {
 		    assert.equal(null, err);
+			bug.status_descr = getBTlookup("bt_status",bug.status);
+			bug.priority_descr = getBTlookup("bt_priority",bug.priority);
+			//var bt = getBTlookup("bt_type",bug.bug_type);
 		    bug.edtm = dateFormat(bug.entry_dtm,'mm/dd/yyyy h:MM tt');
 		    bug.udtm = typeof(bug.update_dtm) == 'undefined' ? '' : dateFormat(bug.update_dtm,'mm/dd/yyyy h:MM tt');
 		    bug.cdtm = typeof(bug.closed_dtm) == 'undefined' ? '' : dateFormat(bug.closed_dtm,'mm/dd/yyyy h:MM tt');
+			if (typeof(bug.user_nm) == 'string') {
+				var obj = lookups.users[bug.user_nm];
+				bug.ename = obj.lname + ', ' + obj.fname;
+			} else { bug.ename="";}
+			if (typeof(bug.assigned_to) == 'string') {
+				var obj = lookups.users[bug.assigned_to];
+				bug.aname = obj.lname + ', ' + obj.fname;
+			} else { bug.aname="";}
 		    if (typeof(bug.worklog) != 'undefined') {
 		    	for (var i=0; i<bug.worklog.length; ++i) {
 				    bug.worklog[i].edtm = typeof(bug.worklog[i].entry_dtm) == 'undefined' ? '' : dateFormat(bug.worklog[i].entry_dtm,'mm/dd/yyyy h:MM tt');
@@ -140,30 +172,263 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 				    bug.attachments[i].edtm = typeof(bug.attachments[i].entry_dtm) == 'undefined' ? '' : dateFormat(bug.attachments[i].entry_dtm,'mm/dd/yyyy h:MM tt');
 		    	}
 		    }
-		    console.log(bug);
+		    //console.log(bug);
 	        res.json(bug);
 	        res.end();
         });
     });
 	
-	app.post('/bug_add', function(req, res, next) {
-		var title = req.body.title,
-			year = req.body.year,
-			imdb = req.body.imdb;
-		if (typeof(title) == 'undefined' || title.trim() == '' || typeof(year) == 'undefined' || year.trim() == '' || typeof(imdb) == 'undefined' || imdb.trim() == '') {
-			next('Please fill in all fields!');
+	app.post('/bug_add_update', function(req, res, next) {
+		//console.log(req.body); res.end('TEST'); return;
+		if (req.body.id == '') { // add
+			db.collection('counters').findAndModify (
+				{"_id": 'bug_id'},
+				[],
+				{'$inc': {'seq': 1 }},
+				{
+					"new": true,
+					"upsert": true
+				},
+				function (err, updoc) {
+				    assert.equal(null, err);
+				    console.log(updoc);
+					var id = updoc.value.seq;
+					var bug_id = req.body.bt_group + id;
+					var iid = new ObjectId();
+					var doc = {
+  "_id": iid
+, "bug_id": bug_id
+, "descr": req.body.descr
+, "product": req.body.product
+, "user_nm": req.body.user_id
+, "bug_type": req.body.bug_type.substr(0,1)
+, "status": req.body.status
+, "priority": req.body.priority
+, "comments": req.body.comments
+, "solution": req.body.solution
+, "entry_dtm": new Date()
+};
+					//console.log(doc); res.end('TEST'); return;
+					db.collection('bt_bugs')
+					.insert(doc, function(err, result) {
+						assert.equal(err, null);
+						console.log("Inserted a document into the bt_bugs collection.");
+						//console.log(result);
+						res.send('SUCCESS '+iid+','+bug_id);
+						res.end();
+					});
+				}
+			)
 		}
-		else {
-			// setup the movie document
-			var doc = { 'title': title, 'year': year, 'imdb': imdb };
-			var rec = db.collection('movies')
-			.insert(doc, function(err, result) {
-			    assert.equal(err, null);
-				res.send("Inserted title: " + title + ", year: " + year + ", imdb: " + imdb);
-			    console.log("Inserted a document into the movies collection.");
-    		});
+		else { // update
+			var bid = req.body.bug_id.replace(/.*(\d+)$/,'$1');
+			var bug_id = req.body.bt_group + bid;
+			var doc = {
+  "bug_id": bug_id
+, "descr": req.body.descr
+, "product": req.body.product
+, "user_nm": req.body.user_id
+, "bug_type": req.body.bug_type.substr(0,1)
+, "status": req.body.status
+, "priority": req.body.priority
+, "comments": req.body.comments
+, "solution": req.body.solution
+, "update_dtm": new Date()
+};
+			//console.log(doc); res.end('TEST'); return;
+			var id = req.body.id;
+			db.collection('bt_bugs')
+			.update({'_id':new ObjectId(id)}, {'$set': doc}, function(err, result) {
+				assert.equal(err, null);
+				//console.log("Updated a document in the bt_bugs collection.");
+				//console.log(result);
+				res.send('SUCCESS');
+				res.end();
+			});
 		}
 	});
+
+	app.post('/worklog_add', function(req, res, next) {
+		//console.log(req.body); res.end('TEST'); return;
+		var id = req.body.id;
+        db.collection('bt_bugs')
+        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+		    assert.equal(null, err);
+			var doc = {
+  "user_nm": req.body.user_id
+, "comments": req.body.wl_comments
+, "wl_public": req.body.wl_public
+, "entry_dtm": new Date()
+};
+			if (typeof(bug.worklog) == 'undefined') bug.worklog = [];
+			bug.worklog.push(doc);
+			var rec = db.collection('bt_bugs')
+			.update({'_id':new ObjectId(id)}, {'$set': bug.worklog}, function(err, result) {
+				assert.equal(err, null);
+				console.log("Inserted a worklog into the bt_bugs collection.");
+				//console.log(result);
+				res.send('SUCCESS');
+				res.end();
+			})
+		})
+	});
+
+	app.post('/worklog_update', function(req, res, next) {
+		//console.log(req.body); res.end('TEST'); return;
+		var id = req.body.id;
+		var idx = req.body.idx;
+        db.collection('bt_bugs')
+        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+		    assert.equal(null, err);
+			var doc = {
+  "user_nm": req.body.user_id
+, "comments": req.body.wl_comments
+, "wl_public": req.body.wl_public
+, "entry_dtm": new Date()
+};
+			bug.worklog[idx] = doc;
+			var rec = db.collection('bt_bugs')
+			.update({'_id':new ObjectId(id)}, {'$set': bug.worklog}, function(err, result) {
+				assert.equal(err, null);
+				console.log("Updated a worklog in the bt_bugs collection.");
+				//console.log(result);
+				res.send('SUCCESS');
+				res.end();
+			})
+		})
+	});
+
+	app.post('/bug_email', function(req, res, next) {
+		//console.log(req.body); res.end('TEST'); return;
+		var id = req.body.id;
+        db.collection('bt_bugs')
+        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+		    assert.equal(null, err);
+			var status = getBTlookup("bt_status",bug.status);
+			var priority = getBTlookup("bt_priority",bug.priority);
+			var bt = getBTlookup("bt_type",bug.bug_type);
+		    var edtm = dateFormat(bug.entry_dtm,'mm/dd/yyyy h:MM tt');
+		    var udtm = typeof(bug.update_dtm) == 'undefined' ? '' : dateFormat(bug.update_dtm,'mm/dd/yyyy h:MM tt');
+		    var cdtm = typeof(bug.closed_dtm) == 'undefined' ? '' : dateFormat(bug.closed_dtm,'mm/dd/yyyy h:MM tt');
+			if (typeof(bug.user_nm) == 'string') {
+				var obj = lookups.users[bug.user_nm];
+				var ename = obj.lname + ', ' + obj.fname;
+				var email = obj.email;
+			} else { var ename=""; var email="";}
+			if (typeof(bug.assigned_to) == 'string') {
+				var obj = lookups.users[bug.assigned_to];
+				var aname = obj.lname + ', ' + obj.fname;
+				var aemail = obj.email;
+			} else { var aname=""; var aemail="";}
+			var msg = req.body.msg2 +"\n\
+\n\
+Details of Bug ID " + req.body.bug_id + "\n\
+\n\
+Description: " + bug.descr + "\n\
+Product or Application: " + bug.product + "\n\
+Bug Type: " + bt + "\n\
+Status: " + status + "\n\
+Priority: " + priority + "\n\
+Comments: " + bug.comments + "\n\
+Solution: " + bug.solution + "\n\
+Assigned To: " + aname + "\n\
+Entry By: " + ename + "\n\
+Entry Date/Time: " + edtm + "\n\
+Update Date/Time: " + udtm + "\n\
+Closed Date/Time: " + cdtm + "\n\
+\n\
+";
+			var rows = typeof(bug.worklog) == 'object' ? bug.worklog : [];
+			msg += rows.length + " Worklog entries found\n\n";
+			if (rows.length > 0) {
+				for (var x=0; x<rows.length; ++x) {
+					var row = rows[x];
+					if (row.user_nm != "") {
+						var obj = lookups.users[row.user_nm];
+						var ename = obj.lname + ', ' + obj.fname;
+					} else var ename="";
+				    var edtm = typeof(row.entry_dtm) == 'undefined' ? '' : dateFormat(row.entry_dtm,'mm/dd/yyyy h:MM tt');
+					msg += "Date/Time: " + edtm + ", By: " + ename + "\n\
+Comments: " + row.comments + "\n";
+				}
+			}
+			console.log(msg);
+			// Use Smtp Protocol to send Email
+			var transporter = mailer.createTransport('smtps://ron.patterson%40usa.net:Quincy@smtp.postoffice.net');
+			var mail = {
+				from: "BugTrack <ronlpatterson@gmail.com>",
+				to: req.body.sendto,
+				subject: req.body.subject,
+				text: msg
+				//html: "<b>Node.js New world for me</b>"
+			}
+			if (req.body.cc != '') mail.cc = req.body.cc;
+			transporter.sendMail(mail, function(error, response) {
+				if (error) {
+					console.log(error);
+				}
+				else {
+					console.log("Message sent: "); console.log(response);
+				}
+				transporter.close();
+			});
+			res.send('SUCCESS');
+			res.end();
+		})
+	});
+
+	app.post('/attachment_add', upload.single('upfile'), function(req, res, next) {
+		console.log(req.body); console.log(req.file); res.end('TEST'); return;
+/*
+{ fieldname: 'upfile',
+  originalname: 'hsm_dates.txt',
+  encoding: '7bit',
+  mimetype: 'text/plain',
+  buffer: <Buffer 30 35 2f 32 30 2f 32 30 31 32 0a 30 35 2f 32 37 2f 32 30 31 32 0a 30 36 2f 30 33 2f 32 30 31 32 0a 30 36 2f 31 37 2f 32 30 31 32 0a 30 37 2f 30 38 2f 32 ...>,
+  size: 220 }
+*/
+		var id = req.body.id;
+		var raw_file = req.file.buffer;
+		var hash = crypto.createHash('md5').update(raw_file).digest("hex");
+        db.collection('bt_bugs')
+        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+		    assert.equal(null, err);
+			var doc = {
+  "file_name": req.body.filename
+, "file_size": req.body.file_size
+, "file_hash": hash
+, "entry_dtm": new Date()
+};
+			bug.attachments.push(doc);
+			var rec = db.collection('bt_bugs')
+			.update({'_id':new ObjectId(id)}, bug, function(err, result) {
+				assert.equal(err, null);
+				console.log("Inserted a attachment into the bt_bugs collection.");
+				console.log(result);
+				var pdir = hash.substr(0,2);
+				fs.access(adir + pdir, fs.R_OK | fs.W_OK, function (err) {
+					if (err) fs.mkdirSync(adir + pdir);
+					fs.fopen(adir + pdir + "/" + hash,"w",function (err, fd) {
+						assert.equal(err, null);
+						fs.fwriteSync(fd,raw_file);
+					});
+				});
+				res.send('SUCCESS');
+				res.end();
+			})
+		})
+	});
+
+    app.post('/attachment_deleteX', function(req, res) {
+		console.log(req.body); res.end('TEST'); return;
+		var id = req.body.id;
+		var idx = req.body.idx;
+		// remove from bt_bugs.attachments
+		// delete file from fs
+		//console.log(doc);
+		res.send(doc);
+    	res.end();
+    });
 
     app.get('/admin_users', function(req, res) {
     	//console.log('admin_users called ');

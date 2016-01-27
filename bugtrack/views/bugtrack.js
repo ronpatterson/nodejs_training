@@ -26,6 +26,7 @@ var bt = // setup the bt namespace
 	stimer: 0,
 	group_def: 'WDD', // default group
 	group_data: {},
+	bug_doc: {},
 
 	check_session: function (event)
 	{
@@ -274,6 +275,7 @@ var bt = // setup the bt namespace
 		}).done(function (data)
 		{
 			//console.log(data);
+			bt.bug_doc = data;
 			$('#bt_bugs_show_edit').dialog('option','title','BugTrack Bug '+data.bug_id);
 			var group_cd = data.bug_id.replace(/\d+$/,'');
 			$('#bt_admin_errors').html('');
@@ -486,7 +488,7 @@ var bt = // setup the bt namespace
 		}
 		var id = $('#bid').val();
 		var params = 'action=worklog_add&'+$('#bt_form2').serialize();
-		params += '&usernm='+$('#usernm').val();
+		params += '&usernm='+$('#userid').val();
 		params += '&id='+id;
 		params += '&bug_id='+$('#bug_id').val();
 		//alert('workloghandler '+params);
@@ -519,29 +521,19 @@ var bt = // setup the bt namespace
 	get_files: function ( event )
 	{
 		$('#filesDiv').empty();
-		var params = 'action=get_files';
-		params += '&id='+$('#bid').val();
-		params += '&bug_id='+$('#bug_id').val();
-		$.ajax({
-			url: 'get_files',
-			type: 'post',
-			data: params,
-			dataType: 'json'
-		}).done(function (data)
-		{
-			var out = '';
-			if (data.length == 0)
-				out = 'No attachments';
-			else
-			{
-				$.each(data,function (i)
-				{
-					var id = $('#bid').val();
-					out += '<a href="get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
-				});
-			}
-			$('#filesDiv').html(out);
-		});
+        var out = '';
+        var data = typeof(bt.bug_doc.attachments) == 'object' ? bt.bug_doc.attachments : [];
+        if (data.length == 0)
+            out = 'No attachments';
+        else
+        {
+            $.each(data,function (i)
+            {
+                var id = $('#bid').val();
+                out += '<a href="views/get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
+            });
+        }
+        $('#filesDiv').html(out);
 	},
 
 	attach_file: function ( event )
@@ -549,7 +541,8 @@ var bt = // setup the bt namespace
 		//$('errors').update();
 		$('#update_list').val("0");
 		//alert("add_file called");
-		w = window.open('add_file.php?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+//		w = window.open('views/add_file.html?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+		w = window.open('add_file?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
 		//setTimeout("watch_add(w)",2000);
 		bt.get_files(event);
 		return false;
@@ -597,7 +590,7 @@ var bt = // setup the bt namespace
 		params += '&bug_id='+$('#bug_id').val();
 		params += '&'+$('#bug_email_form').serialize();
 		$.ajax({
-			url: 'email_bug',
+			url: 'bug_email',
 			type: 'post',
 			data: params,
 			dataType: 'html'

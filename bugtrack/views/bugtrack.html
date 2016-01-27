@@ -212,11 +212,11 @@ div#group,div#group2 {
 	<body background="" bgcolor="#e0e0e0">
 		<center>
 		<table>
-		<tr><td><img src="img/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="img/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
+		<tr><td><img src="views/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="views/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
 		<td valign="middle"><font size="+1"><b>BugTrack</b></font></td></tr>
 		</table><br>
-		<input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
-		<input type="hidden" name="userid" value="<?php echo $uid ?>" id="userid" />
+		<input type="hidden" name="usernm" value="Patterson, Ron" id="usernm" />
+		<input type="hidden" name="userid" value="rlpatter" id="userid" />
 		<input type="hidden" name="bid" id="bid" value="">
 		<input type="hidden" name="bug_id" id="bug_id" value="">
 		<div id="bt_button_div">
@@ -359,6 +359,56 @@ div#group,div#group2 {
 				<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
 				<div id="bugedit_errors"></div>
 			</div>
+		</div>
+
+		<div id="bt_worklog_form" class="bugform" style="display: none;">
+			<form id="bt_form2" name="bt_form2" method="post"><br>
+			<fieldset>
+				<legend>BugTrack Worklog Record</legend>
+				<label>ID:</label>
+				<div class="fields2"><span id="bt_wl_bug_id"></span></div><br class="clear">
+				<label>Description:</label>
+				<div class="fields2"><span id="bt_wl_descr"></span></div><br class="clear">
+				<label>Bug Comments:</label>
+				<div class="fields2"><span id="bt_bug_comments"></span></div><br class="clear">
+				<label>Public:</label>
+				<div class="fields2"><label class="yesno"><input type="radio" name="wl_public" value="y">Yes</label> <label class="yesno"><input type="radio" name="wl_public" value="n">No</label></div><br class="clear">
+				<label for="comments"><span class="required">*</span>Worklog Comments:</label>
+				<div class="fields2"><textarea name="wl_comments" rows="10" cols="40" wrap="virtual"></textarea></div><br class="clear">
+				<label>Entry By:</label>
+				<div class="fields2"><span id="bt_wl_ename"></span></div><br class="clear">
+				<label>Bug Entry Date/Time:</label>
+				<div class="fields2"><span id="bt_wl_entry_dtm"></span></div><br class="clear">
+				<label>&nbsp;</label>
+				<div class="fields2"><input type="submit" value="SAVE"> <input type="button" id="cancel2" value="Cancel"></div><br class="clear">
+			</fieldset>
+			</form>
+			<br>
+			<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
+			<div id="wl_errors"></div>
+		</div>
+
+		<div id="bt_email_div" class="bugform" style="display: none;">
+			<form name="bug_email_form" id="bug_email_form"><br>
+			<fieldset>
+				<legend>BugTrack Record</legend>
+				<label>ID:</label>
+				<div class="fields2"><span id="bug_id_email"></span></div><br class="clear">
+				<label>Description:</label>
+				<div class="fields2"><span id="descr_email"></span></div><br class="clear">
+				<label for="sendto">Send to:</label>
+				<div class="fields2"><input type="text" name="sendto" size="40"></div><br class="clear">
+				<label for="cc">Send copy to (CC):</label>
+				<div class="fields2"><input type="text" name="cc" size="40"></div><br class="clear">
+				<label for="subject">Subject:</label>
+				<div class="fields2"><input type="text" name="subject" size="40" value="bug_id - descr"></div><br class="clear">
+				<label for="msg2">Message to add:</label>
+				<div class="fields2"><textarea name="msg2" rows="3" cols="40" wrap="virtual"></textarea></div><br class="clear">
+				<label>&nbsp;</label>
+				<div class="fields2"><input type="submit" value="Send Bug Message"> <input type="reset"></div><br class="clear">
+			</fieldset>
+			</form>
+			<div id="email_errors"></div>
 		</div>
 
 		<div id="bt_users_admin">
