@@ -503,7 +503,7 @@ var bt = // setup the bt namespace
 			{
 				$('#bt_worklog_form').dialog('close');
 				bt.bugshow(event,$('#bid').val());
-				window.setTimeout(function(){bt.bugshow(event,id);},200);
+				//window.setTimeout(function(){bt.bugshow(event,id);},200);
 			}
 			else
 				$('#wl_errors').html(response);
@@ -530,7 +530,7 @@ var bt = // setup the bt namespace
             $.each(data,function (i)
             {
                 var id = $('#bid').val();
-                out += '<a href="views/get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
+                out += '<a href="src/get_file.html?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
             });
         }
         $('#filesDiv').html(out);
@@ -542,7 +542,7 @@ var bt = // setup the bt namespace
 		$('#update_list').val("0");
 		//alert("add_file called");
 //		w = window.open('views/add_file.html?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
-		w = window.open('add_file?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+		w = window.open('src/add_file.html?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
 		//setTimeout("watch_add(w)",2000);
 		bt.get_files(event);
 		return false;

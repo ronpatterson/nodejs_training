@@ -12,6 +12,7 @@ var express = require('express'),
     dateFormat = require('dateformat'),
     crypto = require('crypto'),
     mailer = require("nodemailer"),
+    path = require("path"),
     multer = require('multer'),
 	upload = multer(), // for parsing multipart/form-data
     assert = require('assert');
@@ -22,7 +23,9 @@ var lookups = [],
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true })); 
+console.log('Current directory: ',process.cwd());
 
 // Handler for internal server errors
 function errorHandler(err, req, res, next) {
@@ -39,6 +42,7 @@ function getBTlookup ( type, cd ) {
 }
 
 function app_init ( db ) {
+	// load lookups with the bt_lookups and bt_users collections
 	var cursor = db.collection('bt_lookups').find({});
 	cursor.project({'_id':0});
 	var results = {};
@@ -64,9 +68,10 @@ function app_init ( db ) {
 			results.users[doc.uid] = doc;
 		}, function(err) {
 			assert.equal(null, err);
+			//console.log(results);
+			lookups = results;
+			console.log('Lookups loaded');
 		});
-		//console.log(results);
-		lookups = results;
 	});
 }
 
@@ -75,32 +80,11 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     assert.equal(null, err);
     console.log("Successfully connected to MongoDB.");
     app_init(db);
+    //debugger;
+	setInterval(function() {app_init(db)},60000); // refresh lookups
 
 	app.get('/', function(req, res, next) {
 		res.render('bugtrack');
-	});
-
-    app.get('/js', function(req, res) {
-		var doc = fs.readFileSync('./views/bugtrack.js');
-		res.send(doc);
-    	res.end();
-    });
-
-    app.get('/css', function(req, res) {
-		var doc = fs.readFileSync('./views/bugtrack.css','utf-8');
-		//console.log(doc);
-		res.send(doc);
-    	res.end();
-    });
-
-    app.get('/views/:name', function(req, res) {
-		var doc = fs.readFileSync('./views/'+req.params.name);
-		res.send(doc);
-    	res.end();
-    });
-    
-	app.get('/add_file', function(req, res, next) {
-		res.render('add_file');
 	});
 
     app.get('/bt_init', function(req, res) {
@@ -255,15 +239,16 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
         .findOne({'_id':new ObjectId(id)},function(err, bug) {
 		    assert.equal(null, err);
 			var doc = {
-  "user_nm": req.body.user_id
+  "user_nm": req.body.usernm
 , "comments": req.body.wl_comments
 , "wl_public": req.body.wl_public
 , "entry_dtm": new Date()
 };
 			if (typeof(bug.worklog) == 'undefined') bug.worklog = [];
 			bug.worklog.push(doc);
+			//console.log(bug); res.end('SUCCESS'); return;
 			var rec = db.collection('bt_bugs')
-			.update({'_id':new ObjectId(id)}, {'$set': bug.worklog}, function(err, result) {
+			.update({'_id': new ObjectId(id)}, {'$set': {'worklog': bug.worklog}}, function(err, result) {
 				assert.equal(err, null);
 				console.log("Inserted a worklog into the bt_bugs collection.");
 				//console.log(result);
@@ -281,14 +266,14 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
         .findOne({'_id':new ObjectId(id)},function(err, bug) {
 		    assert.equal(null, err);
 			var doc = {
-  "user_nm": req.body.user_id
+  "user_nm": req.body.usernm
 , "comments": req.body.wl_comments
 , "wl_public": req.body.wl_public
 , "entry_dtm": new Date()
 };
 			bug.worklog[idx] = doc;
 			var rec = db.collection('bt_bugs')
-			.update({'_id':new ObjectId(id)}, {'$set': bug.worklog}, function(err, result) {
+			.update({'_id':new ObjectId(id)}, {'$set': {'worklog':bug.worklog}}, function(err, result) {
 				assert.equal(err, null);
 				console.log("Updated a worklog in the bt_bugs collection.");
 				//console.log(result);
@@ -378,7 +363,7 @@ Comments: " + row.comments + "\n";
 	});
 
 	app.post('/attachment_add', upload.single('upfile'), function(req, res, next) {
-		console.log(req.body); console.log(req.file); res.end('TEST'); return;
+		console.log(req.body); console.log(req.file); res.end('SUCCESS'); return;
 /*
 { fieldname: 'upfile',
   originalname: 'hsm_dates.txt',
@@ -394,8 +379,8 @@ Comments: " + row.comments + "\n";
         .findOne({'_id':new ObjectId(id)},function(err, bug) {
 		    assert.equal(null, err);
 			var doc = {
-  "file_name": req.body.filename
-, "file_size": req.body.file_size
+  "file_name": req.file.originalname
+, "file_size": req.file.size
 , "file_hash": hash
 , "entry_dtm": new Date()
 };
@@ -405,7 +390,7 @@ Comments: " + row.comments + "\n";
 				assert.equal(err, null);
 				console.log("Inserted a attachment into the bt_bugs collection.");
 				console.log(result);
-				var pdir = hash.substr(0,2);
+				var pdir = hash.substr(0,3);
 				fs.access(adir + pdir, fs.R_OK | fs.W_OK, function (err) {
 					if (err) fs.mkdirSync(adir + pdir);
 					fs.fopen(adir + pdir + "/" + hash,"w",function (err, fd) {

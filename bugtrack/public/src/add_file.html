@@ -1,9 +1,9 @@
 <html>
 <head>
-	<title><?php echo $ttl ?></title>
-	<link href="bugtrack.css" rel="stylesheet" type="text/css" />
-	<script type="text/javascript" src="/lib/scripts/DataTables/media/js/jquery.js"></script>
-	<script type="text/javascript" src="add_file.js"></script>
+	<title>Add Attachment</title>
+	<link href="/css/bugtrack.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="/js/add_file.js"></script>
 	<style type="text/css">
 	<!--
 	a:link,a:visited,a:active { color: blue; text-decoration: none }
@@ -14,11 +14,11 @@
 	</style>
 </head>
 <body style="font-family: Sans-Serif,Helvetica,Arial">
-<div id="errors"><?php echo $msg ?></div>
+<div id="errors"></div>
 <fieldset>
 	<legend>Attachment Upload</legend>
-	<form name="form1" action="attachment_add" enctype="multipart/form-data" method="post" onsubmit="return upload_file();">
-		<input type="hidden" name="id" id="id" value="<?php echo $id ?>">
+	<form name="form1" action="/attachment_add" enctype="multipart/form-data" method="post" onsubmit="return upload_file();">
+		<input type="hidden" name="id" id="id" value="">
 		<input type="hidden" name="MAX_FILE_SIZE" value="8000000">
 		<input type="hidden" name="update_list" id="update_list" value="0" onchange="alert('changed='+this.value);">
 		<table border="0" cellspacing="1" cellpadding="3">
@@ -28,7 +28,7 @@
 	</form>
 	<div id="msg3">Note: Make sure that the names of your upload document files are clear
 and only contain letters, numbers, underscores (_), dashes (-), periods (.), or spaces.
-Also only the following file types are allowed: <?php echo join(", ",$allowed)."."; ?>
+Also only the following file types are allowed: <span id="allowed_types"></span>
 	</div>
 </fieldset>
 <br>

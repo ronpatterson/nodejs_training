@@ -3,216 +3,22 @@
 	<head>
 		<title>BugTrack</title>
 		<meta name="author" content="Ron Patterson, ASD20">
-		<link type="text/css" rel="stylesheet" href="css" title="bt styles">
+		<link type="text/css" rel="stylesheet" href="css/bugtrack.css" title="bt styles">
 		<link rel="stylesheet" href="//cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
 		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 		<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 		<script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 		<script type="text/javascript" charset="utf-8" src="//cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="js"></script>
+		<script type="text/javascript" src="js/bugtrack.js"></script>
 		<style type="text/css">
-/*
-BugTrack styles
-
-Ron Patterson, WildDog Design
-*/
-
-body {
-	font-family: sans-serif, helvetica, arial;
-	margin: 10px 50px;
-}
-
-#p1 {
-	text-align: center;
-	width: 80%;
-	margin-left: 10%;
-	margin-right: 10%;
-}
-
-fieldset  {
-	color: #666;
-	font: 0.8em "Helvetica Neue", helvetica, arial, sans-serif;
-	background-color: #efefef;
-	border: solid 1px #d3d3d3
-}
-
-legend  {
-	color: #666;
-	font-family: "arial black";
-	background-color: #d3d3d3;
-	padding: 2px;
-}
-
-label {
-	display: block;
-	float: left;
-	color: #666;
-	font: 1em "Helvetica Neue", helvetica, arial, sans-serif;
-	font-weight: bold;
-	text-align: right;
-	margin-right: 10px;
-	position: relative;
-	width: 10em;
-}
-
-label.yesno {
-	display: inline;
-	float: none;
-	text-align: left;
-	padding-left: 5px;
-	font-size: smaller;
-	width: 4em;
-}
-
-li.fields1 {
-	display: block;
-	list-style: none;
-}
-
-li.fields1 label {
-	width: 10em;
-	float: left;
-	clear: left;
-	font-weight: bold;
-	text-align: right;
-	margin-right: 1em;
-}
-
-div.fields2 {
-	display: block;
-	float: left;
-	padding: 2px 0;
-	width: 300px;
-}
-
-.sub_label {
-	font-size: 8pt;
-	font-weight: normal;
-}
-
-div.menu, div.counts, div.bulletins {
-	float: left;
-}
-
-div.menu {
-	display: block;
-	width: 50%;
-}
-
-div.counts {
-	display: block;
-	text-align: left;
-	background-color: #9CF;
-	padding: 3px;
-	border: solid 1px #666;
-	color: #666;
-}
-
-div.bulletins {
-	display: block;
-	text-align: left;
-}
-
-div#content_div {
-	margin-top: 7px;
-}
-
-h4.h4menu {
-	margin: 0;
-	padding: 0 0 5px 3px;
-}
-
-div#group,div#group2 {
-	clear: both;
-}
-
-.colx {
-	display: block;
-	width: 12em;
-	padding-left: 1em;
-	padding-right: 1em;
-}
-
-#layoutLogic {
-	width: 100%;
-}
-
-.section {
-	display: block;
-	margin: 0 auto;
-	/*width: 350px;*/
-}
-
-.col1, .col2, .col3 {
-	float: left;
-}
-
-.col1 {
-	display: block;
-	width: 15em;
-	padding-left: 1em;
-	padding-right: 1em;
-}
-
-.col2 {
-	display: block;
-	width: 15em;
-	padding-left: 1em;
-	padding-right: 1em;
-}
-
-.col3 {
-	display: block;
-	width: 15em;
-	padding-left: 1em;
-	padding-right: 1em;
-}
-
-.clear {
-	clear: both;
-}
-
-.login1 {
-	text-align: left;
-	width: 500px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.bugform {
-	text-align: left;
-	/*width: 500px;*/
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.worklog {
-	color: #666;
-	font: 0.8em "Helvetica Neue", helvetica, arial, sans-serif;
-	background-color: #efefef;
-	border: solid 1px #d3d3d3
-}
-
-.center1 {
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.required {
-	color: #f00;
-}
-
-.no-close .ui-dialog-titlebar-close {
-  display: none;
-}
 			button:hover { font-weight: bold; }
 		</style>
 	</head>
 	<body background="" bgcolor="#e0e0e0">
 		<center>
 		<table>
-		<tr><td><img src="views/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="views/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
+		<tr><td><img src="images/BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="images/mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
 		<td valign="middle"><font size="+1"><b>BugTrack</b></font></td></tr>
 		</table><br>
 		<input type="hidden" name="usernm" value="Patterson, Ron" id="usernm" />
