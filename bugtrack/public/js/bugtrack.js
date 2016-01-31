@@ -282,9 +282,10 @@ var bt = // setup the bt namespace
 			$('#bug_id').val(data.bug_id);
 			$('#bug_id2_v').html(data.bug_id);
 			$('#bid').val(id);
+			$('#group_v').html(bt.get_lookup(bt.group_data.bt_group,group_cd));
 			$('#descr_v').html(data.descr);
 			$('#product_v').html(data.product);
-			$('#bt_v').html(bt.get_lookup(bt.group_data.bt_group,group_cd));
+			$('#bt_v').html(bt.get_lookup(bt.group_data.bt_type,data.bug_type));
 			$('#status_v').html(data.status_descr);
 			$('#priority_v').html(data.priority_descr);
 			$('#assignedDiv1').html(data.aname);
@@ -315,7 +316,8 @@ var bt = // setup the bt namespace
 			var wl = data.worklog;
 			for (var x=0; x<wl.length; ++x)
 			{
-				var tr = $('<tr><th>Date/Time: '+wl[x].edtm+'</th></tr>');
+			    var uname = bt.group_data.users[wl[x].user_nm] ? bt.group_data.users[wl[x].user_nm].name : 'n/a';
+				var tr = $('<tr><th>Date/Time: '+wl[x].edtm+' by '+uname+'</th></tr>');
 				div.append(tr);
 				tr = $('<tr><td>'+bt.nl2br(wl[x].comments)+'<hr></td></tr>');
 				div.append(tr);
@@ -365,9 +367,9 @@ var bt = // setup the bt namespace
 			else
 			{
 				bt.buglist(event);
-				$('#bt_bugs_list_edit').dialog('close');
 				if ($('#bid').val() == '') bt.bug_save_cancel();
 				else bt.bugshow(event,$('#bid').val());
+				//$('#bt_bugs_list_edit').dialog('close');
 				//window.setTimeout(function(e) {$('#bugedit_div').dialog('close');},3000);
 			}
 		});
@@ -410,8 +412,8 @@ var bt = // setup the bt namespace
 		var f = document.bt_form9;
 		var table = $('#bt_user_assign_tbl').DataTable({
 			'ajax': {
-				'url': bt.URL,
-				'type': 'post',
+				'url': 'admin_users',
+				'type': 'get',
 				'data': {
 					'action': 'getUsersSearch',
 					'lname': f.lname.value,
@@ -637,7 +639,7 @@ var bt = // setup the bt namespace
 		}).done(function (data)
 		{
             var table = $('#bt_user_tbl').DataTable({
-                'data': data,
+                'data': data.data,
                 'destroy': true,
                 'order': [[ 0, "asc" ]],
                 'columns': [
