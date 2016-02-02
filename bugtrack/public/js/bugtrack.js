@@ -532,7 +532,7 @@ var bt = // setup the bt namespace
             $.each(data,function (i)
             {
                 var id = $('#bid').val();
-                out += '<a href="src/get_file.html?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
+                out += '<a href="src/get_file.html?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return bt.remove_file("'+id+'",'+i+');" style="cursor: pointer;">Remove</span><br>';
             });
         }
         $('#filesDiv').html(out);
@@ -556,7 +556,7 @@ var bt = // setup the bt namespace
 		var params = 'action=remove_file';
 		params += '&fid='+$('#fid').val();
 		$.ajax({
-			url: 'remove_file',
+			url: 'attachment_delete',
 			type: 'post',
 			data: params,
 			dataType: 'html'

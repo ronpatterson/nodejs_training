@@ -422,15 +422,29 @@ Comments: " + row.comments + "\n";
 		})
 	});
 
-    app.post('/attachment_deleteX', function(req, res) {
+    app.post('/attachment_delete', function(req, res) {
 		console.log(req.body); res.end('SUCCESS'); return;
 		var id = req.body.id;
 		var idx = req.body.idx;
 		// remove from bt_bugs.attachments
-		// delete file from fs
-		//console.log(doc);
-		res.send(doc);
-    	res.end();
+        db.collection('bt_bugs')
+        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+		    assert.equal(null, err);
+		    var attr = bug.attachments;
+		    var file = attr[idx];
+		    var attr = attr.splice(idx,1); // remove attachment doc
+			var rec = db.collection('bt_bugs')
+			.update({'_id':new ObjectId(id)}, {'$set': {'attachments': attr}}, function(err, result) {
+				assert.equal(err, null);
+				console.log("Removed attachment from the bt_bugs collection.");
+				console.log(result);
+				// delete file from fs
+				var pdir = file.hash.substr(0,3);
+				fs.unlinkSync(adir + pdir + file.file_name);
+				res.send('SUCCESS');
+				res.end();
+			});
+		});
     });
 
     app.get('/admin_users', function(req, res) {
