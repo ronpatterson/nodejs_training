@@ -412,9 +412,9 @@ Comments: " + row.comments + "\n";
 			var pdir = hash.substr(0,3);
 			fs.access(adir + pdir, fs.R_OK | fs.W_OK, function (err) {
 				if (err) fs.mkdirSync(adir + pdir);
-				fs.fopen(adir + pdir + "/" + hash,"w",function (err, fd) {
+				fs.open(adir + pdir + "/" + hash,"w",function (err, fd) {
 					assert.equal(err, null);
-					fs.fwriteSync(fd,raw_file);
+					fs.write(fd,raw_file);
 				});
 			});
 			res.send('SUCCESS');
@@ -423,7 +423,7 @@ Comments: " + row.comments + "\n";
 	});
 
     app.post('/attachment_delete', function(req, res) {
-		console.log(req.body); res.end('SUCCESS'); return;
+		//console.log(req.body); res.end('SUCCESS'); return;
 		var id = req.body.id;
 		var idx = req.body.idx;
 		// remove from bt_bugs.attachments
@@ -432,15 +432,16 @@ Comments: " + row.comments + "\n";
 		    assert.equal(null, err);
 		    var attr = bug.attachments;
 		    var file = attr[idx];
-		    var attr = attr.splice(idx,1); // remove attachment doc
+		    attr.splice(idx,1); // remove attachment doc
+			//console.log(attr); res.end('SUCCESS'); return;
 			var rec = db.collection('bt_bugs')
 			.update({'_id':new ObjectId(id)}, {'$set': {'attachments': attr}}, function(err, result) {
 				assert.equal(err, null);
 				console.log("Removed attachment from the bt_bugs collection.");
-				console.log(result);
+				//console.log(result);
 				// delete file from fs
 				var pdir = file.hash.substr(0,3);
-				fs.unlinkSync(adir + pdir + file.file_name);
+				fs.unlink(adir + pdir + file.file_hash);
 				res.send('SUCCESS');
 				res.end();
 			});
