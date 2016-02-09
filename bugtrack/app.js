@@ -18,7 +18,12 @@ var express = require('express'),
     assert = require('assert');
 
 var lookups = [],
-	adir = '/usr/local/data/';
+	adir = '/usr/local/data/',
+	mongo_host = 'localhost',
+	mongo_port = '27017',
+	smtp_host = 'smtp.postoffice.net',
+	smtp_user = 'ron.patterson%40usa.net',
+	smtp_pw = 'xxxx';
 
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
@@ -75,7 +80,7 @@ function app_init ( db ) {
 	});
 }
 
-MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
+MongoClient.connect('mongodb://'+mongo_host+':'+mongo_port+'/bugtrack', function(err, db) {
 
     assert.equal(null, err);
     console.log("Successfully connected to MongoDB.");
@@ -128,7 +133,7 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
     app.get('/bug_get', function(req, res) {
     	var id = req.query.id;
         db.collection('bt_bugs')
-        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+        .findOne({'_id':new ObjectId(id)}, function(err, bug) {
 		    assert.equal(null, err);
 			bug.status_descr = getBTlookup("bt_status",bug.status);
 			bug.priority_descr = getBTlookup("bt_priority",bug.priority);
@@ -268,7 +273,7 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 		var id = req.body.id;
 		var idx = req.body.idx;
         db.collection('bt_bugs')
-        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+        .findOne({'_id':new ObjectId(id)}, function(err, bug) {
 		    assert.equal(null, err);
 			var doc = {
   "user_nm": req.body.usernm
@@ -310,7 +315,7 @@ MongoClient.connect('mongodb://localhost:27017/bugtrack', function(err, db) {
 		//console.log(req.body); res.end('TEST'); return;
 		var id = req.body.id;
         db.collection('bt_bugs')
-        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+        .findOne({'_id':new ObjectId(id)}, function(err, bug) {
 		    assert.equal(null, err);
 			var status = getBTlookup("bt_status",bug.status);
 			var priority = getBTlookup("bt_priority",bug.priority);
@@ -362,7 +367,7 @@ Comments: " + row.comments + "\n";
 			}
 			console.log(msg);
 			// Use Smtp Protocol to send Email
-			var transporter = mailer.createTransport('smtps://ron.patterson%40usa.net:xxxx@smtp.postoffice.net');
+			var transporter = mailer.createTransport('smtps://'+smtp_user+':'+smtp_pw+'@'+smtp_host);
 			var mail = {
 				from: "BugTrack <ronlpatterson@gmail.com>",
 				to: req.body.sendto,
@@ -412,7 +417,7 @@ Comments: " + row.comments + "\n";
 			var pdir = hash.substr(0,3);
 			fs.access(adir + pdir, fs.R_OK | fs.W_OK, function (err) {
 				if (err) fs.mkdirSync(adir + pdir);
-				fs.open(adir + pdir + "/" + hash,"w",function (err, fd) {
+				fs.open(adir + pdir + "/" + hash,"w", function (err, fd) {
 					assert.equal(err, null);
 					fs.write(fd,raw_file);
 				});
@@ -428,7 +433,7 @@ Comments: " + row.comments + "\n";
 		var idx = req.body.idx;
 		// remove from bt_bugs.attachments
         db.collection('bt_bugs')
-        .findOne({'_id':new ObjectId(id)},function(err, bug) {
+        .findOne({'_id':new ObjectId(id)}, function(err, bug) {
 		    assert.equal(null, err);
 		    var attr = bug.attachments;
 		    var file = attr[idx];
@@ -485,7 +490,7 @@ Comments: " + row.comments + "\n";
     app.get('/user_get', function(req, res) {
     	var uid = req.query.uid;
         db.collection('bt_users')
-        .findOne({'uid':uid},function(err, user) {
+        .findOne({'uid':uid}, function(err, user) {
 		    assert.equal(null, err);
 		    //console.log(user);
 		    user.name = user.lname + ', ' + user.fname;

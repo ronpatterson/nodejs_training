@@ -1,0 +1,119 @@
+-- bugtrack.mongodb.txt
+
+-- MongoDB design version
+
+-- Revision 0.1, 19-Dec-2014
+
+-- Ron Patterson, WildDog Design
+
+-- collections document definitions
+
+db.counters : {
+    _id : string, // bug_id
+    seq : int32
+}
+
+-- new 4/29/2015
+db.bt_lookups {
+	_id : ObjectID,
+	'bt_type' : [{ // array
+		cd : string,
+		descr : string,
+		active : string
+	}],
+	'bt_group' : [{ // array
+		cd : string,
+		descr : string,
+		active : string
+	}],
+	'bt_status' : [{ // array
+		cd : string,
+		descr : string,
+		active : string
+	}],
+	'bt_priority' : [{ // array
+		cd : string,
+		descr : string,
+		active : string
+	}]
+}
+
+db.bt_bugs {
+	_id : ObjectID,
+	descr : string,
+	product : string,
+	user_nm : string,
+	bug_type : char,
+	status : char, // o=open, h=hold, w=working, c=closed
+	priority : char, // 1=high, 2=normal, 3=low
+	comments : string,
+	solution : string,
+	assigned_to : string,
+	bug_id : string, // <group><id>
+	entry_dtm : ISODate,
+	update_dtm : ISODate,
+	closed_dtm : ISODate,
+    worklog : [{ // array
+        user_nm : string
+        comments : string,
+        wl_public : char,
+        entry_dtm : ISODate
+    }],
+    attachments : [{ // array
+        file_name : string,
+        file_size : int32,
+        file_hash : string,
+        entry_dtm : ISODate
+    }]
+}
+
+db.bt_users {
+	"_id" : ObjectId,
+	"uid" : string,
+	"lname" : string,
+	"fname" : string,
+	"email" : string,
+	"active" : char,
+	"roles" : [
+		string
+	],
+	"pw" : string,
+	"bt_group" : string
+}
+
+db.bt_lookups.insert({
+	'bt_type' : [
+		{cd:'h',descr:'Hardware issue',active:'y'},
+		{cd:'d',descr:'Database issue',active:'y'},
+		{cd:'g',descr:'General issue',active:'y'},
+		{cd:'n',descr:'Network issue',active:'y'},
+		{cd:'m',descr:'EMail issue',active:'y'},
+		{cd:'c',descr:'Calendar issue',active:'y'},
+		{cd:'b',descr:'BugTrack issue',active:'y'},
+		{cd:'w',descr:'Web browser issue',active:'y'},
+		{cd:'x',descr:'Web server issue',active:'y'},
+		{cd:'p',descr:'Desktop/laptop PC issue',active:'y'},
+		{cd:'a',descr:'Desktop/laptop Mac issue',active:'y'},
+		{cd:'z',descr:'Mobile/Palm/Pocket PC issue',active:'y'},
+		{cd:'u',descr:'Unknown issue',active:'y'},
+		{cd:'e',descr:'Enhancement',active:'y'}
+	],
+	'bt_group' : [
+		{cd:'GC',descr:'Generic Company',active:'y'},
+		{cd:'WDD',descr:'WildDog Design',active:'y'},
+		{cd:'DOC',descr:'Dept of Corrections',active:'y'}
+	],
+	'bt_status' : [
+		{cd:'o',descr:'Open',active:'y'},
+		{cd:'h',descr:'Hold',active:'y'},
+		{cd:'w',descr:'Working',active:'y'},
+		{cd:'y',descr:'Awaiting Customer',active:'y'},
+		{cd:'t',descr:'Testing',active:'y'},
+		{cd:'c',descr:'Closed',active:'y'}
+	],
+	'bt_priority' : [
+		{cd:'1',descr:'High',active:'y'},
+		{cd:'2',descr:'Normal',active:'y'},
+		{cd:'3',descr:'Low',active:'y'}
+	]
+});
