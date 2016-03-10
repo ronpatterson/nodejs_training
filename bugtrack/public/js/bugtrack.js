@@ -625,9 +625,174 @@ var bt = // setup the bt namespace
 
 	bugadmin: function ( event )
 	{
-		bt.showDialogDiv('BugTrack Admin','bt_users_admin',700);
+	    var codes = ["bt_type","bt_group","bt_status","bt_priority","bt_users"];
+	    var descrs = ["Type","Group","Status","Priority","Users"];
+		var obj = $('<select></select>');
+		var opt = $('<option></option>').attr('value','').html('--Select One--');
+		obj.append(opt);
+		for (var i=0; i<codes.length; ++i)
+		{
+			var opt = $('<option></option>').attr('value',codes[i]).html(descrs[i]);
+			obj.append(opt);
+		}
+		$('#bt_admin_types').empty().append(obj);
+		bt.showDialogDiv('BugTrack Admin','bt_admin',700);
+		$('#bt_admin_lu_add').on('click',bt.bugadmin_lu_add);
 		$('#bt_admin_users_add').on('click',bt.user_add);
-		bt.bugadmin_users();
+		$('#bt_admin_types select').on('change',bt.bugadmin_lu);
+		//bt.bugadmin_users();
+		$('.bugadmin').hide();
+		$('#bt_admin_head').show();
+		return false;
+	},
+	
+	bugadmin_lu: function ( event )
+	{
+		$('.bugadmin').hide();
+		var type = $('#bt_admin_types select').val();
+		switch (type)
+		{
+		    case 'bt_type':
+		    case 'bt_group':
+		    case 'bt_status':
+		    case 'bt_priority':
+        		bt.bugadmin_lu_list(type);
+        	    break;
+		    case 'bt_users':
+        		bt.bugadmin_users();
+        	    break;
+        	default:
+        	    alert('ERROR: Unknown type ('+type+')');
+		}
+	},
+
+	bugadmin_lu_list: function ( type )
+	{
+		$('#bt_lu_tbl tbody').off( 'click', 'button');
+		$.ajax({
+			url: 'admin_lu_list',
+			type: 'get',
+			dataType: 'json',
+			data: 'action=admin_lu_get&type='+type
+		}).done(function (data)
+		{
+            var table = $('#bt_lu_tbl').DataTable({
+                'data': data.data,
+                'destroy': true,
+                'order': [[ 0, "asc" ]],
+                'columns': [
+                    {'data': 'cd'},
+                    {'data': 'descr'},
+                    {'data': 'active'},
+                    null
+                ],
+                'columnDefs': [ {
+                    'targets': -1,
+                    'data': null,
+                    'defaultContent': '<button>Edit</button>'
+                } ]
+            });
+            $('#bt_lu_tbl tbody').on( 'click', 'button', function () {
+                var data = table.row( $(this).parents('tr') ).data();
+                //alert( 'user='+data[0]);
+                //console.log(data);
+                bt.bugadmin_lu_show(event,type,data.cd);
+            } );
+		});
+		$('#bt_lu_list').show();
+		$('#bt_lu_form').hide();
+		return false;
+	},
+
+	bugadmin_lu_add: function ( event )
+	{
+		//bt.showDialogDiv('Lookup Add','bugadmin_lu_add');
+		$('#bt_lu_errors').html('');
+		$('#bt_users_form input[type="text"]').val('');
+		$('input[name="cd"]').removeAttr('readonly');
+		$('input[name="active"]').removeAttr('checked');
+		$('input[name="active"][value="y"]').prop('checked',true);
+        $('input[name="lu_type"]').val($('#bt_admin_types select').val());
+        $('input[name="lu_action"]').val('add');
+		$('#bt_lu_list').hide();
+		$('#bt_lu_form').show();
+	},
+
+	bugadmin_lu_show: function ( event, type, cd )
+	{
+		var params = "action=bug_lu_show";
+		params += '&type='+type;
+		$.ajax({
+			url: 'admin_lu_get',
+			type: 'get',
+			data: params,
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//console.log(data);
+			var rec = {};
+            for (var i=0; i<data.length; ++i)
+            {
+                var item = data[i];
+                if (cd == item.cd)
+                {
+                    rec = item;
+                    break;
+                }
+            }
+			$('#bt_lu_errors').html('');
+			$('input[name="cd"]').val(cd);
+			$('input[name="cd"]').attr('readonly',true);
+			$('input[name="descr"]').val(rec.descr);
+			$('input[name="active"]').removeAttr('checked');
+			if (rec.active == 'y') $('input[name="active"][value="y"]').prop('checked',true);
+			else $('input[name="active"][value="n"]').prop('checked',true);
+			$('input[name="lu_type"]').val(type);
+			$('input[name="lu_action"]').val('change');
+		});
+		$('#bt_lu_list').hide();
+		$('#bt_lu_form').show();
+		return false;
+	},
+
+	luhandler: function( event ) {
+		//alert('luhandler '+$('#bt_lu_form_id').serialize());
+// 		var err = bt.validate();
+		var f = document.bt_lu_form;
+		var err = '';
+		if (f.cd.value.blank())
+			err += " - Code must not be blank<br>";
+		//console.log(f.lu_type.value,f.cd.value.trim(),bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim())); return false;
+		if (bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim()) != 'n/a')
+			err += " - Code is already used<br>";
+		if (f.descr.value.blank())
+			err += " - Description must not be blank<br>";
+		if (err != '')
+		{
+			$('#bt_lu_errors').html('Errors encountered:<br>'+err);
+			return false;
+		}
+		var params = 'action=lu_add_update';
+		params += '&'+$('#bt_lu_form_id').serialize();
+		//alert('userhandler '+params); return false;
+		$.ajax({
+			url: 'lu_add_update',
+			type: 'post',
+			data: params,
+			dataType: 'html'
+		}).done(function (response)
+		{
+			$('#bt_lu_errors').html(response);
+			bt.reload_lookups();
+			bt.bugadmin_lu_list(f.lu_type.value);
+		});
+		return false;
+	},
+
+	lu_save_cancel: function( event )
+	{
+		$('#bt_lu_list').show();
+		$('#bt_lu_form').hide();
 		return false;
 	},
 
@@ -865,6 +1030,21 @@ var bt = // setup the bt namespace
 		//console.log(obj);
 		return obj;
 	},
+	
+	reload_lookups: function ( )
+	{
+		var params = 'action=bt_init';
+		$.ajax({
+			url: 'bt_init',
+			type: 'get',
+			data: params,
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//console.log(data);
+			bt.group_data = data;
+		});
+	},
 
 	get_lookup: function ( group, cd )
 	{
@@ -873,7 +1053,7 @@ var bt = // setup the bt namespace
 		for (var i=0; i<group.length; ++i)
 		{
 			var item = group[i];
-			if (cd == item.cd)
+			if (cd.trim() == item.cd.trim())
 			{
 				return item.descr;
 			}
@@ -897,6 +1077,8 @@ var bt = // setup the bt namespace
 		$('#bug_email_form').on('submit',bt.email_bug);
 		$('#cancel2').on('click',bt.worklogCancelDialog);
 		$('#bt_bug_edit_cancel').on('click',bt.bugCancelDialog);
+		$('#bt_lu_form_id').on('submit',bt.luhandler);
+		$('#bt_lu_save_cancel').on('click',bt.lu_save_cancel);
 		$('#bt_user_form_id').on('submit',bt.userhandler);
 		$('#bt_user_save_cancel').on('click',bt.user_save_cancel);
 		$('#bt_show_buttons span').button();

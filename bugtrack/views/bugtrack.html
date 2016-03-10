@@ -219,8 +219,47 @@
 			<div id="email_errors"></div>
 		</div>
 
-		<div id="bt_users_admin">
-			<div id="bt_users_list" class="bugform" style="display: none;">
+		<div id="bt_admin">
+			<div id="bt_admin_head" class="bugform" style="display: none;">
+				Select Admin Section:
+				<span id="bt_admin_types">
+					<select></select>
+				</span>
+			</div>
+
+			<div id="bt_lu_list" class="bugform bugadmin" style="display: none;">
+				<input type="button" id="bt_admin_lu_add" value="Add Entry">
+				<table id="bt_lu_tbl" class="display" border="1" cellspacing="0" cellpadding="2">
+					<thead>
+					<tr>
+					<th>Code</th>
+					<th>Description</th>
+					<th>Active</th>
+					<th>&nbsp;</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
+
+			<div id="bt_lu_form" class="bugform bugadmin" style="display: none;">
+				<fieldset>
+					<legend>Lookup Add/Edit</legend>
+					<form name="bt_lu_form" id="bt_lu_form_id">
+					<table id="bt_lu_tbl2" border="0" cellspacing="0" cellpadding="2">
+					<tr><th align="right">Code</th><td><input type="text" name="cd" size="20"></td></tr>
+					<tr><th align="right">Description</th><td><input type="text" name="descr" size="40" value=""></td></tr>
+					<tr><th align="right">Active</th><td><label class="yesno"><input type="radio" name="active" value="y">Yes</label> <label class="yesno"><input type="radio" name="active" value="n">No</label></td></tr>
+					</table>
+					<input type="submit" value="Save">
+					<input type="button" id="bt_lu_save_cancel" value="Cancel">
+					<input type="hidden" name="lu_type" value="">
+					<input type="hidden" name="lu_action" value="add">
+					</form>
+				</fieldset>
+				<div id="bt_lu_errors"></div>
+			</div>
+
+			<div id="bt_users_list" class="bugform bugadmin" style="display: none;">
 				<input type="button" id="bt_admin_users_add" value="Add User">
 				<table id="bt_user_tbl" class="display" border="1" cellspacing="0" cellpadding="2">
 					<thead>
@@ -236,7 +275,7 @@
 				</table>
 			</div>
 
-			<div id="bt_users_form" class="bugform" style="display: none;">
+			<div id="bt_users_form" class="bugform bugadmin" style="display: none;">
 				<fieldset>
 					<legend>User Add/Edit</legend>
 					<form name="bt_user_form" id="bt_user_form_id">

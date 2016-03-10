@@ -465,32 +465,111 @@ Closed Date/Time: " + cdtm + "\n\
 	app.post('/attachment_delete', function(req, res) {
 		//console.log(req.body); res.end('SUCCESS'); return;
 		var id = req.body.id;
-		var idx = req.body.idx;
+		var hash = req.body.hash;
 		// remove from bt_bugs.attachments
 		db.collection('bt_bugs')
-		.findOne(
+		.update(
 			{ '_id': new ObjectId(id) },
-			function(err, bug) {
+			{ '$pull': { 'attachments.file_hash': hash } },
+			function(err, result) {
+				assert.equal(err, null);
+				console.log("Removed attachment from the bt_bugs collection.");
+				//console.log(result);
+				// delete file from fs
+				var pdir = hash.substr(0,3);
+				fs.unlink(adir + pdir + hash);
+				res.send('SUCCESS');
+				res.end();
+			}
+		)
+	});
+
+	app.get('/admin_lu_list', function(req, res) {
+		var type = req.query.type;
+		db.collection('bt_lookups')
+		.findOne(
+			{ }, 
+			function(err, lu) {
 				assert.equal(null, err);
-				var attr = bug.attachments;
-				var file = attr[idx];
-				attr.splice(idx,1); // remove attachment doc
-				//console.log(attr); res.end('SUCCESS'); return;
-				var rec = db.collection('bt_bugs')
-				.update(
-					{ '_id': new ObjectId(id) },
-					{ '$set': { 'attachments': attr } },
-					function(err, result) {
-						assert.equal(err, null);
-						console.log("Removed attachment from the bt_bugs collection.");
-						//console.log(result);
-						// delete file from fs
-						var pdir = file.hash.substr(0,3);
-						fs.unlink(adir + pdir + file.file_hash);
-						res.send('SUCCESS');
+				results = { 'data': lu[type] };
+				//console.log(results);
+				res.json(results);
+				res.end();
+			}
+		);
+	});
+
+	app.get('/admin_lu_get', function(req, res) {
+		var type = req.query.type;
+		db.collection('bt_lookups')
+		.findOne(
+			{ }, 
+			function(err, lu) {
+				assert.equal(null, err);
+				res.json(lu[type]);
+				res.end();
+			}
+		);
+	});
+
+	app.post('/lu_add_update', function(req, res, next) {
+		// check action
+		//console.log(req.body); res.end('TEST'); return;
+		var type = req.body.lu_type;
+		var doc = {
+  "cd": req.body.cd
+, "descr": req.body.descr
+, "active": req.body.active
+};
+		db.collection('bt_lookups')
+		.findOne(
+			{ }, 
+			function(err, lu) {
+				var id = lu._id;
+				delete lu._id;
+				if (req.body.lu_action == 'add') { // add
+					// find array entry
+					var i = 0;
+					while (i < lu[type].length && lu[type][i].cd != req.body.cd) ++i;
+					if (i < lu[type].length) {
+						res.send('ERROR, Code already exist!');
 						res.end();
+						return;
 					}
-				)
+					lu[type].push(doc);
+					var rec = db.collection('bt_lookups')
+					.update(
+						{ _id: id },
+						{ '$set': lu },
+						function(err, result) {
+							assert.equal(err, null);
+							console.log("Inserted a lookup into the bt_lookups collection.");
+							console.log(result);
+							res.send('SUCCESS');
+							res.end();
+						}
+					);
+				}
+				else { // change
+					// find array entry
+					var i = 0;
+					while (i < lu[type].length && lu[type][i].cd != req.body.cd) ++i;
+					// update array
+					if (i < lu[type].length) lu[type][i] = doc;
+					//console.log(lu,id); //res.end('TEST'); return;
+					var rec = db.collection('bt_lookups')
+					.update(
+						{ _id: id },
+						{ '$set': lu },
+						function(err, result) {
+							assert.equal(err, null);
+							console.log("Updated a lookup in the bt_lookups collection.");
+							//console.log(result);
+							res.send('SUCCESS');
+							res.end();
+						}
+					);
+				}
 			}
 		)
 	});
