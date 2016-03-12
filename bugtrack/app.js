@@ -49,18 +49,16 @@ function getBTlookup ( type, cd ) {
 function app_init ( db ) {
 	// load lookups with the bt_lookups and bt_users collections
 	var cursor = db.collection('bt_lookups').find( { } );
-	cursor.project({'_id':0});
 	var results = {};
 	cursor.forEach(function(doc) {
 		//assert.equal(null, doc);
-		["bt_type","bt_group","bt_status","bt_priority"].forEach(function(element, index, array) {
-			var arr = [];
-			doc[element].forEach(function(element2, index2, array2) {
-				if (element2.active == "y")
-					arr.push({"cd":element2.cd,"descr":element2.descr});
-			});
-			results[element] = arr;
-		})
+		var arr = [];
+		var id = doc._id;
+		doc.items.forEach(function(element, index, array) {
+			if (element.active == "y")
+				arr.push({"cd":element.cd,"descr":element.descr});
+		});
+		results[id] = arr;
 	}, function(err) {
 		assert.equal(null, err);
 		results.roles = "admin";
@@ -75,7 +73,7 @@ function app_init ( db ) {
 			assert.equal(null, err);
 			//console.log(results);
 			lookups = results;
-			console.log('Lookups loaded');
+			//console.log('Lookups loaded');
 		});
 	});
 }
@@ -488,10 +486,11 @@ Closed Date/Time: " + cdtm + "\n\
 		var type = req.query.type;
 		db.collection('bt_lookups')
 		.findOne(
-			{ }, 
+			{ '_id': type },
+			{ 'fields': {'items': 1} },
 			function(err, lu) {
 				assert.equal(null, err);
-				results = { 'data': lu[type] };
+				results = { 'data': lu.items };
 				//console.log(results);
 				res.json(results);
 				res.end();
@@ -503,10 +502,11 @@ Closed Date/Time: " + cdtm + "\n\
 		var type = req.query.type;
 		db.collection('bt_lookups')
 		.findOne(
-			{ }, 
+			{ '_id': type },
+			{ 'fields': {'items': 1} },
 			function(err, lu) {
 				assert.equal(null, err);
-				res.json(lu[type]);
+				res.json(lu.items);
 				res.end();
 			}
 		);
@@ -523,24 +523,22 @@ Closed Date/Time: " + cdtm + "\n\
 };
 		db.collection('bt_lookups')
 		.findOne(
-			{ }, 
+			{ '_id': type },
 			function(err, lu) {
-				var id = lu._id;
-				delete lu._id;
 				if (req.body.lu_action == 'add') { // add
 					// find array entry
 					var i = 0;
-					while (i < lu[type].length && lu[type][i].cd != req.body.cd) ++i;
-					if (i < lu[type].length) {
+					while (i < lu.items.length && lu.items[i].cd != req.body.cd) ++i;
+					if (i < lu.items.length) {
 						res.send('ERROR, Code already exist!');
 						res.end();
 						return;
 					}
-					lu[type].push(doc);
+					lu.items.push(doc);
 					var rec = db.collection('bt_lookups')
 					.update(
-						{ _id: id },
-						{ '$set': lu },
+						{ '_id': type },
+						{ '$set': { 'items': lu.items } },
 						function(err, result) {
 							assert.equal(err, null);
 							console.log("Inserted a lookup into the bt_lookups collection.");
@@ -553,22 +551,24 @@ Closed Date/Time: " + cdtm + "\n\
 				else { // change
 					// find array entry
 					var i = 0;
-					while (i < lu[type].length && lu[type][i].cd != req.body.cd) ++i;
+					while (i < lu.items.length && lu.items[i].cd != req.body.cd) ++i;
 					// update array
-					if (i < lu[type].length) lu[type][i] = doc;
-					//console.log(lu,id); //res.end('TEST'); return;
-					var rec = db.collection('bt_lookups')
-					.update(
-						{ _id: id },
-						{ '$set': lu },
-						function(err, result) {
-							assert.equal(err, null);
-							console.log("Updated a lookup in the bt_lookups collection.");
-							//console.log(result);
-							res.send('SUCCESS');
-							res.end();
-						}
-					);
+					if (i < lu.items.length) {
+						lu.items[i] = doc;
+						//console.log(lu,id); //res.end('TEST'); return;
+						var rec = db.collection('bt_lookups')
+						.update(
+							{ '_id': type },
+							{ '$set': { 'items': lu.items } },
+							function(err, result) {
+								assert.equal(err, null);
+								console.log("Updated a lookup in the bt_lookups collection.");
+								//console.log(result);
+								res.send('SUCCESS');
+								res.end();
+							}
+						);
+					}
 				}
 			}
 		)
@@ -686,4 +686,4 @@ Closed Date/Time: " + cdtm + "\n\
 		console.log('Express server listening on port %s.', port);
 	});
 
-});
+}); // MongoClient.connect

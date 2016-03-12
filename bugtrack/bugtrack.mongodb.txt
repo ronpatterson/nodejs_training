@@ -3,6 +3,7 @@
 -- MongoDB design version
 
 -- Revision 0.1, 19-Dec-2014
+-- Revision 0.2, 11-Mar-2016
 
 -- Ron Patterson, WildDog Design
 
@@ -14,24 +15,10 @@ db.counters : {
 }
 
 -- new 4/29/2015
+-- change 3/11/2016
 db.bt_lookups {
-	_id : ObjectID,
-	'bt_type' : [{ // array
-		cd : string,
-		descr : string,
-		active : string
-	}],
-	'bt_group' : [{ // array
-		cd : string,
-		descr : string,
-		active : string
-	}],
-	'bt_status' : [{ // array
-		cd : string,
-		descr : string,
-		active : string
-	}],
-	'bt_priority' : [{ // array
+	_id : string, // bt_type, bt_group, bt_status, bt_priority
+	'items' : [{ // array
 		cd : string,
 		descr : string,
 		active : string
@@ -82,38 +69,48 @@ db.bt_users {
 }
 
 db.bt_lookups.insert({
-	'bt_type' : [
-		{cd:'h',descr:'Hardware issue',active:'y'},
-		{cd:'d',descr:'Database issue',active:'y'},
-		{cd:'g',descr:'General issue',active:'y'},
-		{cd:'n',descr:'Network issue',active:'y'},
-		{cd:'m',descr:'EMail issue',active:'y'},
-		{cd:'c',descr:'Calendar issue',active:'y'},
-		{cd:'b',descr:'BugTrack issue',active:'y'},
-		{cd:'w',descr:'Web browser issue',active:'y'},
-		{cd:'x',descr:'Web server issue',active:'y'},
-		{cd:'p',descr:'Desktop/laptop PC issue',active:'y'},
-		{cd:'a',descr:'Desktop/laptop Mac issue',active:'y'},
-		{cd:'z',descr:'Mobile/Palm/Pocket PC issue',active:'y'},
-		{cd:'u',descr:'Unknown issue',active:'y'},
-		{cd:'e',descr:'Enhancement',active:'y'}
-	],
-	'bt_group' : [
-		{cd:'GC',descr:'Generic Company',active:'y'},
-		{cd:'WDD',descr:'WildDog Design',active:'y'},
-		{cd:'DOC',descr:'Dept of Corrections',active:'y'}
-	],
-	'bt_status' : [
-		{cd:'o',descr:'Open',active:'y'},
-		{cd:'h',descr:'Hold',active:'y'},
-		{cd:'w',descr:'Working',active:'y'},
-		{cd:'y',descr:'Awaiting Customer',active:'y'},
-		{cd:'t',descr:'Testing',active:'y'},
-		{cd:'c',descr:'Closed',active:'y'}
-	],
-	'bt_priority' : [
-		{cd:'1',descr:'High',active:'y'},
-		{cd:'2',descr:'Normal',active:'y'},
-		{cd:'3',descr:'Low',active:'y'}
+	'_id'  :  'bt_type', 
+	'items'  :  [
+		{cd : 'h', descr : 'Hardware issue', active : 'y'}, 
+		{cd : 'd', descr : 'Database issue', active : 'y'}, 
+		{cd : 'g', descr : 'General issue', active : 'y'}, 
+		{cd : 'n', descr : 'Network issue', active : 'y'}, 
+		{cd : 'm', descr : 'EMail issue', active : 'y'}, 
+		{cd : 'c', descr : 'Calendar issue', active : 'y'}, 
+		{cd : 'b', descr : 'BugTrack issue', active : 'y'}, 
+		{cd : 'w', descr : 'Web browser issue', active : 'y'}, 
+		{cd : 'x', descr : 'Web server issue', active : 'y'}, 
+		{cd : 'p', descr : 'Desktop/laptop PC issue', active : 'y'}, 
+		{cd : 'a', descr : 'Desktop/laptop Mac issue', active : 'y'}, 
+		{cd : 'z', descr : 'Mobile/Palm/Pocket PC issue', active : 'y'}, 
+		{cd : 'u', descr : 'Unknown issue', active : 'y'}, 
+		{cd : 'e', descr : 'Enhancement', active : 'y'}
+	]
+});
+db.bt_lookups.insert({
+	'_id'  :  'bt_group', 
+	'items'  :  [
+		{cd : 'GC', descr : 'Generic Company', active : 'y'}, 
+		{cd : 'WDD', descr : 'WildDog Design', active : 'y'}, 
+		{cd : 'DOC', descr : 'Dept of Corrections', active : 'y'}
+	]
+});
+db.bt_lookups.insert({
+	'_id'  :  'bt_status', 
+	'items'  :  [
+		{cd : 'o', descr : 'Open', active : 'y'}, 
+		{cd : 'h', descr : 'Hold', active : 'y'}, 
+		{cd : 'w', descr : 'Working', active : 'y'}, 
+		{cd : 'y', descr : 'Awaiting Customer', active : 'y'}, 
+		{cd : 't', descr : 'Testing', active : 'y'}, 
+		{cd : 'c', descr : 'Closed', active : 'y'}
+	]
+});
+db.bt_lookups.insert({
+	'_id'  :  'bt_priority', 
+	'items'  :  [
+		{cd : '1', descr : 'High', active : 'y'}, 
+		{cd : '2', descr : 'Normal', active : 'y'}, 
+		{cd : '3', descr : 'Low', active : 'y'}
 	]
 });

@@ -762,8 +762,9 @@ var bt = // setup the bt namespace
 		var err = '';
 		if (f.cd.value.blank())
 			err += " - Code must not be blank<br>";
-		//console.log(f.lu_type.value,f.cd.value.trim(),bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim())); return false;
-		if (bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim()) != 'n/a')
+		//console.log(f.lu_action.value,f.lu_type.value,f.cd.value.trim(),bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim())); return false;
+		if (f.lu_action.value == 'add'
+		  && bt.get_lookup(bt.group_data[f.lu_type.value],f.cd.value.trim()) != 'n/a')
 			err += " - Code is already used<br>";
 		if (f.descr.value.blank())
 			err += " - Description must not be blank<br>";
