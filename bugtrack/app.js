@@ -1,7 +1,8 @@
-// BugTrack - nodejs version
+// BugTrack - nodejs server module
 // Ron Patterson, BPWC
 // 1/18/2016
 
+// load required modules
 var express = require('express'),
 	app = express(),
 	MongoClient = require('mongodb').MongoClient,
@@ -17,6 +18,7 @@ var express = require('express'),
 	upload = multer(), // for parsing multipart/form-data
 	assert = require('assert');
 
+// globals
 var lookups = [],
 	adir = '/usr/local/data/',
 	mongo_host = 'localhost',
@@ -25,6 +27,7 @@ var lookups = [],
 	smtp_user = 'ron.patterson%40usa.net',
 	smtp_pw = 'xxxx';
 
+// setup express.js
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
@@ -46,6 +49,7 @@ function getBTlookup ( type, cd ) {
 	}
 }
 
+// app initialization
 function app_init ( db ) {
 	// load lookups with the bt_lookups and bt_users collections
 	var cursor = db.collection('bt_lookups').find( { } );
