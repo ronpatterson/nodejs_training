@@ -1,0 +1,4 @@
+ENIGMA Module | All About NodeJS by Sachin Bhatnagar
+----------------------------------------------------
+1. On the terminal, and within the enigma folder, run 'npm install' to install all dependencies.
+2. From the myModule folder, run app.js by typing 'node app'
