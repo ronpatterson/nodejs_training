@@ -2,6 +2,8 @@
 // Ron Patterson, BPWC
 // 1/18/2016
 
+'use strict';
+
 // load required modules
 var express = require('express'),
 	app = express(),
